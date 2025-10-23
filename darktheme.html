@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Translator App with Theme Toggle</title>
+  <style>
+    :root {
+      --bg-color: #1e3c72;
+      --text-color: #fff;
+      --box-bg: rgba(255, 255, 255, 0.15);
+      --button-bg: #00c9a7;
+      --output-bg: #fff;
+      --output-text: #333;
+    }
+
+    [data-theme="light"] {
+      --bg-color: #f0f0f0;
+      --text-color: #333;
+      --box-bg: #fff;
+      --button-bg: #2575fc;
+      --output-bg: #e0e0e0;
+      --output-text: #000;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transition: background 0.3s ease;
+    }
+
+    .container {
+      background-color: var(--box-bg);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+
+    textarea, select, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      height: 100px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    button {
+      background-color: var(--button-bg);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .output {
+      margin-top: 20px;
+      background-color: var(--output-bg);
+      color: var(--output-text);
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      min-height: 50px;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--button-bg);
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</div>
+  <div class="container">
+    <h2>🌐 Translate Your Text</h2>
+    <textarea id="inputText" placeholder="Type something..."></textarea>
+    <select id="language">
+      <option value="fr">French</option>
+      <option value="es">Spanish</option>
+      <option value="ta">Tamil</option>
+      <option value="hi">Hindi</option>
+    </select>
+    <button onclick="translateText()">Translate</button>
+    <div class="output" id="outputText">Your translation will appear here...</div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      body.setAttribute("data-theme", newTheme);
+      document.querySelector(".theme-toggle").innerText = newTheme === "dark" ? "🌙 Dark Mode" : "☀️ Light Mode";
+    }
+
+    async function translateText() {
+      const text = document.getElementById("inputText").value;
+      const lang = document.getElementById("language").value;
+
+      try {
+        const response = await fetch(`https://cog-api.azure-api.net/translate?api-version=3.0&to=${lang}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+            // No need to add subscription key headers if APIM injects them
+          },
+          body: JSON.stringify([{ "Text": text }])
+        });
+
+        if (!response.ok) {
+          throw new Error("Translation failed: " + response.statusText);
+        }
+
+        const result = await response.json();
+        document.getElementById("outputText").innerText = result[0].translations[0].text;
+      } catch (error) {
+        document.getElementById("outputText").innerText = "Error: " + error.message;
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
