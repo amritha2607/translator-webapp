@@ -125,7 +125,7 @@
       const lang = document.getElementById("language").value;
 
       try {
-        const response = await fetch(`https://cog-api.azure-api.net/translate?api-version=3.0&to=${lang}`, {
+        const response = await fetch(`https://cog-api.azure-api.net/translator/translate?api-version=3.0&to=${lang}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
